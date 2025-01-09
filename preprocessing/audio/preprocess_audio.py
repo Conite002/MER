@@ -19,7 +19,7 @@ def load_wav2vec_model(model_name="facebook/wav2vec2-base"):
     return processor, model
 
 
-def preprocess_audio_for_model(audio_path, processor, model, target_sample_rate=16000, target_duration=5.0):
+def preprocess_audio_for_model(audio_path, processor, model, target_sample_rate=16000, target_duration=8.0):
     """
     Preprocess audio and extract embeddings using a specified model.
 
