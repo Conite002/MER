@@ -6,7 +6,7 @@ import os
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
 
-def load_wav2vec_model(model_name="facebook/wav2vec2-base"):
+def load_audio_model(model_name="facebook/wav2vec2-base"):
     """
     Load the Wav2Vec model and processor.
     Args:

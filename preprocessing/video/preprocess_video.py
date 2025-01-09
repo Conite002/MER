@@ -1,10 +1,12 @@
-
+import os
 import cv2
 from PIL import Image
 from transformers import ViTFeatureExtractor, ViTModel
 import cv2
 import numpy as np
 import torch
+
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
 def load_video_data_and_extract_audio(video_dir, output_audio_dir):
     """

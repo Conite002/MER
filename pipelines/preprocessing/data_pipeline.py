@@ -3,9 +3,9 @@ import json
 from tqdm import tqdm
 from sklearn.decomposition import PCA
 import pandas as pd
-from preprocessing.audio.preprocess_audio import preprocess_audio_for_wav2vec
+from preprocessing.audio.preprocess_audio import preprocess_audio_for_model
 from preprocessing.text.preprocess_text import preprocess_text_for_model
-from preprocessing.video.preprocess_video import preprocess_video_for_vit
+from preprocessing.video.preprocess_video import preprocess_video_for_model
 
 def reduce_dimensions(embeddings, target_dim):
     if embeddings is None:
@@ -32,9 +32,9 @@ def process_single_video(vid, video_speakers, video_labels, video_audio, video_v
         dict: Structured multimodal features for the video.
     """
     try:
-        audio_features = preprocess_audio_for_wav2vec(video_audio[vid], target_dim=target_dims["audio"])
+        audio_features = preprocess_audio_for_model(video_audio[vid], target_dim=target_dims["audio"])
 
-        visual_features = preprocess_video_for_vit(video_visual[vid], target_dim=target_dims["visual"])
+        visual_features = preprocess_video_for_model(video_visual[vid], target_dim=target_dims["visual"])
 
         sentence = video_sentence[vid]
         text_features = preprocess_text_for_model(sentence, text_tokenizer, text_model, max_length=target_dims["text"])
