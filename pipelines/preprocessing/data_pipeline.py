@@ -32,17 +32,13 @@ def process_single_video(vid, video_speakers, video_labels, video_audio, video_v
         dict: Structured multimodal features for the video.
     """
     try:
-        # Process audio
         audio_features = preprocess_audio_for_wav2vec(video_audio[vid], target_dim=target_dims["audio"])
 
-        # Process visual
         visual_features = preprocess_video_for_vit(video_visual[vid], target_dim=target_dims["visual"])
 
-        # Process text
         sentence = video_sentence[vid]
         text_features = preprocess_text_for_model(sentence, text_tokenizer, text_model, max_length=target_dims["text"])
 
-        # Return structured data
         return {
             "vid": vid,
             "speakers": video_speakers[vid],
@@ -93,7 +89,6 @@ def save_dataset(dataset, output_path):
     with open(output_path, "w") as f:
         json.dump(dataset, f, indent=4)
 
-# Main pipeline function
 def run_data_pipeline(train_vids, dev_vids, test_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model):
     """
     Run the data preprocessing pipeline for train, dev, and test datasets.
@@ -109,12 +104,10 @@ def run_data_pipeline(train_vids, dev_vids, test_vids, video_speakers, video_lab
         "visual": 512
     }
 
-    # Process datasets
     train_data = prepare_dataset(train_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
     dev_data = prepare_dataset(dev_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
     test_data = prepare_dataset(test_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
 
-    # Save datasets
     save_dataset(train_data, "outputs/preprocessed/train_data.json")
     save_dataset(dev_data, "outputs/preprocessed/dev_data.json")
     save_dataset(test_data, "outputs/preprocessed/test_data.json")

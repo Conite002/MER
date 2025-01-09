@@ -8,7 +8,6 @@ def setup_logger(log_folder, dim, name):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     log_file = os.path.join(log_folder, f"{name}_embedding_dim_{dim}_{timestamp}.log")
 
-    # Reset any existing logging configuration
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
