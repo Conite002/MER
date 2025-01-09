@@ -2,7 +2,7 @@ import os
 import json
 from tqdm import tqdm
 from sklearn.decomposition import PCA
-
+import pandas as pd
 from preprocessing.audio.preprocess_audio import preprocess_audio_for_wav2vec
 from preprocessing.text.preprocess_text import preprocess_text_for_model
 from preprocessing.video.preprocess_video import preprocess_video_for_vit
@@ -111,3 +111,36 @@ def run_data_pipeline(train_vids, dev_vids, test_vids, video_speakers, video_lab
     save_dataset(train_data, "outputs/preprocessed/train_data.json")
     save_dataset(dev_data, "outputs/preprocessed/dev_data.json")
     save_dataset(test_data, "outputs/preprocessed/test_data.json")
+
+
+
+def generate_metadata(csv_file, video_audio_metadata, output_json_path):
+    """
+    Generate metadata for train/dev/test splits.
+
+    Args:
+        csv_file (str): Path to the CSV file containing text and labels.
+        video_audio_metadata (list): List of video-audio metadata dictionaries.
+        output_json_path (str): Path to save the generated JSON.
+
+    Returns:
+        None
+    """
+    data = pd.read_csv(csv_file)
+    metadata = []
+ 
+    video_audio_map = {item["video_path"]: item["audio_path"] for item in video_audio_metadata}
+
+    for _, row in data.iterrows():
+        video_path = row["Video_ID"]
+        if video_path in video_audio_map:
+            metadata.append({
+                "video": video_path,
+                "audio": video_audio_map[video_path],
+                "text": row["Utterance"],
+                "label": row["Emotion"]
+            })
+
+    os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
+    with open(output_json_path, "w") as f:
+        json.dump(metadata, f, indent=4)

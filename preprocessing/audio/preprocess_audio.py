@@ -2,6 +2,8 @@ import torch
 import librosa
 import numpy as np
 from transformers import Wav2Vec2Processor, Wav2Vec2Model
+import os
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
 
 def load_wav2vec_model(model_name="facebook/wav2vec2-base"):
@@ -50,3 +52,40 @@ def preprocess_audio_for_model(audio_path, processor, model, target_sample_rate=
     except Exception as e:
         print(f"Error processing audio: {e}")
         return None
+
+
+def extract_audio(video_dir, output_audio_dir):
+    """
+    Extract audio from video files in a directory.
+
+    Args:
+        video_dir (str): Directory containing video files.
+        output_audio_dir (str): Directory to save extracted audio files.
+
+    Returns:
+        list: Metadata linking video and audio files.
+    """
+    os.makedirs(output_audio_dir, exist_ok=True)
+    metadata = []
+
+    for root, _, files in os.walk(video_dir):
+        for file in files:
+            if file.endswith(".mp4"):
+                video_path = os.path.join(root, file)
+                audio_filename = os.path.splitext(file)[0] + ".wav"
+                audio_path = os.path.join(output_audio_dir, audio_filename)
+
+                try:
+                    # Extract audio
+                    with VideoFileClip(video_path) as video:
+                        video.audio.write_audiofile(audio_path, fps=16000)
+                except Exception as e:
+                    print(f"Error processing {video_path}: {e}")
+                    continue
+
+                metadata.append({
+                    "video_path": video_path,
+                    "audio_path": audio_path
+                })
+
+    return metadata
