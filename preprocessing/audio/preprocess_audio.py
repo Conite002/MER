@@ -53,7 +53,6 @@ def preprocess_audio_for_model(audio_path, processor, model, target_sample_rate=
         print(f"Error processing audio: {e}")
         return None
 
-
 def extract_audio(video_dir, output_audio_dir):
     """
     Extract audio from video files in a directory.
@@ -65,6 +64,9 @@ def extract_audio(video_dir, output_audio_dir):
     Returns:
         list: Metadata linking video and audio files.
     """
+    import os
+    from moviepy.video.io.VideoFileClip import VideoFileClip
+
     os.makedirs(output_audio_dir, exist_ok=True)
     metadata = []
 
@@ -79,7 +81,10 @@ def extract_audio(video_dir, output_audio_dir):
                     # Extract audio
                     with VideoFileClip(video_path) as video:
                         video.audio.write_audiofile(audio_path, fps=16000)
+                        print(f"Audio extracted successfully: {audio_path}")
                 except Exception as e:
+                    print(f"Video Path: {video_path}")
+                    print(f"Audio Path: {audio_path}")
                     print(f"Error processing {video_path}: {e}")
                     continue
 
