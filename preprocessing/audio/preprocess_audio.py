@@ -55,7 +55,7 @@ def preprocess_audio_for_model(audio_path, processor, model, target_sample_rate=
 
 def extract_audio(video_dir, output_audio_dir):
     """
-    Extract audio from video files in a directory, skipping files starting with '._'.
+    Extract audio from video files in a directory, skipping files starting with '._' or if the WAV file already exists.
 
     Args:
         video_dir (str): Directory containing video files.
@@ -66,12 +66,13 @@ def extract_audio(video_dir, output_audio_dir):
     """
     import os
     from moviepy.video.io.VideoFileClip import VideoFileClip
+    from tqdm import tqdm
 
     os.makedirs(output_audio_dir, exist_ok=True)
     metadata = []
 
-    for root, _, files in tqdm(os.walk(video_dir), desc="Extracting audio"):
-        for file in files:
+    for root, _, files in os.walk(video_dir):
+        for file in tqdm(files, desc="Extracting audio", unit="file"):
             # Skip hidden files or macOS metadata files
             if file.startswith("._") or not file.endswith(".mp4"):
                 print(f"Skipping file: {file}")
@@ -80,6 +81,15 @@ def extract_audio(video_dir, output_audio_dir):
             video_path = os.path.join(root, file)
             audio_filename = os.path.splitext(file)[0] + ".wav"
             audio_path = os.path.join(output_audio_dir, audio_filename)
+
+            # Skip if the audio file already exists
+            if os.path.exists(audio_path):
+                print(f"Skipping existing audio file: {audio_path}")
+                metadata.append({
+                    "video_path": video_path,
+                    "audio_path": audio_path
+                })
+                continue
 
             try:
                 # Extract audio
@@ -98,7 +108,6 @@ def extract_audio(video_dir, output_audio_dir):
             })
 
     return metadata
-
 
 import os
 

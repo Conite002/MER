@@ -126,13 +126,17 @@ def generate_metadata(csv_file, video_audio_metadata, output_json_path):
     Returns:
         None
     """
+    print("Generating metadata...")
     data = pd.read_csv(csv_file)
     metadata = []
  
     video_audio_map = {item["video_path"]: item["audio_path"] for item in video_audio_metadata}
-    # use tqdm for progress bar
+    print("First few video_audio_map keys:", list(video_audio_map.keys())[:5])
+
     for _, row in tqdm(data.iterrows(), total=len(data), desc="Processing metadata"):
-        video_path = row["Video_ID"]
+        video_name = f"dia{row['Dialogue_ID']}_utt{row['Utterance_ID']}.mp4"
+        video_path = os.path.normpath(os.path.join("..", "data", "MELD.Raw", "train", "train_splits", video_name))
+
         if video_path in video_audio_map:
             metadata.append({
                 "video": video_path,
