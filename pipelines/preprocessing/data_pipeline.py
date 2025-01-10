@@ -130,8 +130,8 @@ def generate_metadata(csv_file, video_audio_metadata, output_json_path):
     metadata = []
  
     video_audio_map = {item["video_path"]: item["audio_path"] for item in video_audio_metadata}
-
-    for _, row in data.iterrows():
+    # use tqdm for progress bar
+    for _, row in tqdm(data.iterrows(), total=len(data), desc="Processing metadata"):
         video_path = row["Video_ID"]
         if video_path in video_audio_map:
             metadata.append({

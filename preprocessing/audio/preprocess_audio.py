@@ -70,7 +70,7 @@ def extract_audio(video_dir, output_audio_dir):
     os.makedirs(output_audio_dir, exist_ok=True)
     metadata = []
 
-    for root, _, files in os.walk(video_dir):
+    for root, _, files in tqdm(os.walk(video_dir), desc="Extracting audio"):
         for file in files:
             # Skip hidden files or macOS metadata files
             if file.startswith("._") or not file.endswith(".mp4"):
