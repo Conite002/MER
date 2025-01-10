@@ -1,6 +1,8 @@
 import os
 import json
 from tqdm import tqdm
+import pandas as pd
+
 from sklearn.decomposition import PCA
 import pandas as pd
 from preprocessing.audio.preprocess_audio import preprocess_audio_for_model
@@ -113,8 +115,7 @@ def run_data_pipeline(train_vids, dev_vids, test_vids, video_speakers, video_lab
     save_dataset(test_data, "outputs/preprocessed/test_data.json")
 
 
-
-def generate_metadata(csv_file, video_audio_metadata, output_json_path):
+def generate_metadata(csv_file, video_audio_metadata, output_json_path, dataset_type="train"):
     """
     Generate metadata for train/dev/test splits.
 
@@ -122,20 +123,32 @@ def generate_metadata(csv_file, video_audio_metadata, output_json_path):
         csv_file (str): Path to the CSV file containing text and labels.
         video_audio_metadata (list): List of video-audio metadata dictionaries.
         output_json_path (str): Path to save the generated JSON.
+        dataset_type (str): Type of dataset ('train', 'test', 'dev').
 
     Returns:
         None
     """
-    print("Generating metadata...")
+
+
+    print(f"Generating metadata for {dataset_type}...")
     data = pd.read_csv(csv_file)
     metadata = []
- 
-    video_audio_map = {item["video_path"]: item["audio_path"] for item in video_audio_metadata}
+
+    video_audio_map = {os.path.normpath(item["video_path"]): os.path.normpath(item["audio_path"]) for item in video_audio_metadata}
     print("First few video_audio_map keys:", list(video_audio_map.keys())[:5])
 
-    for _, row in tqdm(data.iterrows(), total=len(data), desc="Processing metadata"):
+    if dataset_type == "train":
+        base_video_dir = "../data/MELD.Raw/train/train_splits"
+    elif dataset_type == "test":
+        base_video_dir = "../data/MELD.Raw/test/output_repeated_splits_test"
+    elif dataset_type == "dev":
+        base_video_dir = "../data/MELD.Raw/dev/dev_splits_complete"
+    else:
+        raise ValueError(f"Invalid dataset_type: {dataset_type}")
+
+    for _, row in tqdm(data.iterrows(), total=len(data), desc=f"Processing {dataset_type} metadata"):
         video_name = f"dia{row['Dialogue_ID']}_utt{row['Utterance_ID']}.mp4"
-        video_path = os.path.normpath(os.path.join("..", "data", "MELD.Raw", "train", "train_splits", video_name))
+        video_path = os.path.normpath(os.path.join(base_video_dir, video_name))
 
         if video_path in video_audio_map:
             metadata.append({
@@ -144,6 +157,11 @@ def generate_metadata(csv_file, video_audio_metadata, output_json_path):
                 "text": row["Utterance"],
                 "label": row["Emotion"]
             })
+        else:
+            print(f"Warning: Video file {video_path} not found in audio metadata map.")
+
+    if not metadata:
+        print(f"No matching entries found for {dataset_type}. Check video_audio_metadata and CSV file.")
 
     os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
     with open(output_json_path, "w") as f:
