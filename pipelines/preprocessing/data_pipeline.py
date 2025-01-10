@@ -54,66 +54,6 @@ def process_single_video(vid, video_speakers, video_labels, video_audio, video_v
         print(f"Error processing video {vid}: {e}")
         return None
 
-def prepare_dataset(video_ids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims):
-    """
-    Prepare a dataset for multimodal training/testing.
-
-    Args:
-        video_ids (list): List of video IDs.
-        video_speakers (dict): Speakers metadata for each video.
-        video_labels (dict): Labels for each video.
-        video_audio (dict): Raw audio features for each video.
-        video_visual (dict): Raw visual features for each video.
-        video_sentence (dict): Text sentences for each video.
-        text_tokenizer: Text tokenizer for encoding text.
-        text_model: Text model for generating embeddings.
-        target_dims (dict): Target dimensions for each modality.
-
-    Returns:
-        list: Structured dataset with multimodal features for each video.
-    """
-    dataset = []
-    for vid in tqdm(video_ids, desc="Processing videos"):
-        data = process_single_video(vid, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
-        if data is not None:
-            dataset.append(data)
-    return dataset
-
-def save_dataset(dataset, output_path):
-    """
-    Save the processed dataset to a JSON file.
-
-    Args:
-        dataset (list): Processed dataset.
-        output_path (str): Path to save the dataset.
-    """
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w") as f:
-        json.dump(dataset, f, indent=4)
-
-def run_data_pipeline(train_vids, dev_vids, test_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model):
-    """
-    Run the data preprocessing pipeline for train, dev, and test datasets.
-
-    Args:
-        train_vids, dev_vids, test_vids: Video IDs for train, dev, and test sets.
-        video_speakers, video_labels, video_audio, video_visual, video_sentence: Multimodal data dictionaries.
-        text_tokenizer, text_model: Tokenizer and model for text embeddings.
-    """
-    target_dims = {
-        "audio": 100,
-        "text": 768,
-        "visual": 512
-    }
-
-    train_data = prepare_dataset(train_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
-    dev_data = prepare_dataset(dev_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
-    test_data = prepare_dataset(test_vids, video_speakers, video_labels, video_audio, video_visual, video_sentence, text_tokenizer, text_model, target_dims)
-
-    save_dataset(train_data, "outputs/preprocessed/train_data.json")
-    save_dataset(dev_data, "outputs/preprocessed/dev_data.json")
-    save_dataset(test_data, "outputs/preprocessed/test_data.json")
-
 
 def generate_metadata(csv_file, video_audio_metadata, output_json_path, dataset_type="train"):
     """
