@@ -4,7 +4,7 @@ import numpy as np
 from transformers import Wav2Vec2Processor, Wav2Vec2Model
 import os
 from moviepy.video.io.VideoFileClip import VideoFileClip
-
+from tqdm import tqdm
 
 def load_audio_model(model_name="facebook/wav2vec2-base"):
     """
@@ -55,7 +55,7 @@ def preprocess_audio_for_model(audio_path, processor, model, target_sample_rate=
 
 def extract_audio(video_dir, output_audio_dir):
     """
-    Extract audio from video files in a directory.
+    Extract audio from video files in a directory, skipping files starting with '._'.
 
     Args:
         video_dir (str): Directory containing video files.
@@ -72,25 +72,56 @@ def extract_audio(video_dir, output_audio_dir):
 
     for root, _, files in os.walk(video_dir):
         for file in files:
-            if file.endswith(".mp4"):
-                video_path = os.path.join(root, file)
-                audio_filename = os.path.splitext(file)[0] + ".wav"
-                audio_path = os.path.join(output_audio_dir, audio_filename)
+            # Skip hidden files or macOS metadata files
+            if file.startswith("._") or not file.endswith(".mp4"):
+                print(f"Skipping file: {file}")
+                continue
 
-                try:
-                    # Extract audio
-                    with VideoFileClip(video_path) as video:
-                        video.audio.write_audiofile(audio_path, fps=16000)
-                        print(f"Audio extracted successfully: {audio_path}")
-                except Exception as e:
-                    print(f"Video Path: {video_path}")
-                    print(f"Audio Path: {audio_path}")
-                    print(f"Error processing {video_path}: {e}")
-                    continue
+            video_path = os.path.join(root, file)
+            audio_filename = os.path.splitext(file)[0] + ".wav"
+            audio_path = os.path.join(output_audio_dir, audio_filename)
 
-                metadata.append({
-                    "video_path": video_path,
-                    "audio_path": audio_path
-                })
+            try:
+                # Extract audio
+                with VideoFileClip(video_path) as video:
+                    video.audio.write_audiofile(audio_path, fps=16000)
+                    print(f"Audio extracted successfully: {audio_path}")
+            except Exception as e:
+                print(f"Video Path: {video_path}")
+                print(f"Audio Path: {audio_path}")
+                print(f"Error processing {video_path}: {e}")
+                continue
+
+            metadata.append({
+                "video_path": video_path,
+                "audio_path": audio_path
+            })
 
     return metadata
+
+
+import os
+
+def rename_files(video_dir):
+    """
+    Rename files starting with '._' to remove the prefix, avoiding overwriting existing files.
+
+    Args:
+        video_dir (str): Directory containing video files.
+    """
+    for file in os.listdir(video_dir):
+        if file.startswith("._") and file.endswith(".mp4"):
+            original_path = os.path.join(video_dir, file)
+            new_name = file[2:]  # Remove the `._` prefix
+            new_path = os.path.join(video_dir, new_name)
+
+            # Check if the target file already exists
+            if os.path.exists(new_path):
+                print(f"File already exists: {new_path}. Skipping...")
+                continue
+
+            # Rename the file
+            os.rename(original_path, new_path)
+            print(f"Renamed: {original_path} -> {new_path}")
+
+
